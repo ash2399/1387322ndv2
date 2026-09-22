@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Photos | Team SRG</title>
+<meta name="theme-color" content="#000000">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;800;900&display=swap" rel="stylesheet">
+<!-- This page never needs editing. It gets the photo count from the brochure's All photos button. -->
+<style>
+  :root {
+    --black: #000;
+    --ink: #fff;
+    --muted: #9a9a9a;
+    --line: rgba(244, 122, 31, 0.22);
+    --edge: rgba(244, 122, 31, 0.45);
+    --orange: #f47a1f;
+    --font: "Montserrat", "Helvetica Neue", Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    background: var(--black);
+    color: var(--ink);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+  }
+  :focus-visible { outline: 2px solid var(--orange); outline-offset: 2px; }
+  .bar {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 16px 10px;
+    background: rgba(0, 0, 0, 0.92);
+    border-bottom: 1px solid var(--line);
+  }
+  .back {
+    flex: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-height: 40px;
+    padding: 0 14px 0 10px;
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    background: none;
+    color: inherit;
+    font: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .back svg { width: 18px; height: 18px; }
+  .title { min-width: 0; }
+  .title p { margin: 0; }
+  .address {
+    font-size: 15px;
+    font-weight: 900;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .meta { font-size: 13px; color: var(--muted); }
+  main { max-width: 1000px; margin: 0 auto; padding: 0 0 calc(24px + env(safe-area-inset-bottom, 0px)); }
+  .hint { margin: 12px 16px; font-size: 13px; color: var(--muted); }
+  .photos { display: grid; gap: 6px; }
+  .photos img { display: block; width: 100%; height: auto; background: #1a1a1a; }
+  .missing { padding: 40px 20px; background: #1a1a1a; color: var(--muted); font-size: 14px; text-align: center; }
+  @media (min-width: 700px) { .photos { gap: 10px; padding: 0 16px; } }
+</style>
+</head>
+<body>
+<header class="bar">
+  <button class="back" id="back" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+    Back
+  </button>
+  <div class="title">
+    <p class="address" id="address">Photos</p>
+    <p class="meta" id="meta"></p>
+  </div>
+</header>
+
+<main>
+  <p class="hint">Press and hold any photo to save it.</p>
+  <div class="photos" id="photos"></div>
+</main>
+
+<script>
+(function () {
+  const q = new URLSearchParams(location.search);
+  const total = Math.min(parseInt(q.get("count"), 10) || 0, 200);
+  const ext = (q.get("type") || "jpg").replace(/[^a-z]/gi, "") || "jpg";
+  const title = q.get("title") || "";
+  const box = document.getElementById("photos");
+
+  if (title) {
+    document.getElementById("address").textContent = title;
+    document.title = title + " | Photos";
+  }
+  document.getElementById("meta").textContent = total === 1 ? "1 photo" : total + " photos";
+
+  for (let i = 1; i <= total; i++) {
+    const img = document.createElement("img");
+    img.src = i + "." + ext;
+    img.alt = (title || "Property") + ", photo " + i + " of " + total;
+    img.width = 1800;
+    img.height = 1200;
+    img.loading = i <= 2 ? "eager" : "lazy";
+    img.decoding = "async";
+    img.onerror = function () {
+      const note = document.createElement("div");
+      note.className = "missing";
+      note.textContent = i + "." + ext + " was not found in this folder.";
+      img.replaceWith(note);
+    };
+    box.appendChild(img);
+  }
+  if (!total) {
+    const note = document.createElement("div");
+    note.className = "missing";
+    note.textContent = "No photos to show. Check the photo count in the brochure.";
+    box.appendChild(note);
+  }
+
+  document.getElementById("back").addEventListener("click", function () {
+    if (history.length > 1) history.back(); else location.href = "index.html";
+  });
+})();
+</script>
+</body>
+</html>
